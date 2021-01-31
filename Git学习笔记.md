@@ -128,3 +128,7 @@ To github.com:xxx/docker.git
    Branch 'feature-A' set up to track remote branch 'feature-A' from 'origin'.
 ```
 
+后面push就直接git push即可
+
+或者在GitHub网站创建feature-B分支，在客户工作端切换到feature-B，获取最新的仓库分支
+
