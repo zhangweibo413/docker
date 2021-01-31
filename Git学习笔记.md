@@ -31,9 +31,24 @@ Enter passphrase for key '/Users/Frank/.ssh/id_ed25519':
 Hi zhangweibo413! You've successfully authenticated, but GitHub does not provide shell access.
 ```
 
+初始化
+
+```bash
+Frank-MacBook:docker Frank$ git config --global user.email "xxx@gmail.com"
+Frank-MacBook:docker Frank$ git config --global user.name "xxx"
+```
+
 克隆项目到本地工作端（需要输入密码）
 
 ```bash
 Frank-MacBook:~ Frank$ git clone git@github.com:zhangweibo413/docker.git
+```
+
+提交修改
+
+```bash
+Frank-MacBook:docker Frank$ git commit -m "edit git学习笔记"
+[main 169e0a3] edit git学习笔记
+ 1 file changed, 6 insertions(+)
 ```
 
