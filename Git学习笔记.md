@@ -7,14 +7,14 @@
 工作端电脑设置公私钥
 
 ```bash
-Frank-MacBook:~ Frank$ ssh-keygen -t ed25519 -C "zhangweibo@gmail.com"
+Frank-MacBook:~ Frank$ ssh-keygen -t ed25519 -C "xxx@gmail.com"
 Generating public/private ed25519 key pair.
 Enter file in which to save the key (/Users/Frank/.ssh/id_ed25519):
 Enter passphrase (empty for no passphrase):
 Enter same passphrase again:
 Your identification has been saved in /Users/Frank/.ssh/id_ed25519.
 Your public key has been saved in /Users/Frank/.ssh/id_ed25519.pub.
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOQEswISzw5TKWtxX7yzIT/WmMjbU7IN3whyzaYULprj zhangweibo@gmail.com
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOQEswISzw5TKWtxX7yzIT/WmMjbU7IN3whyzaYULprj xxx@gmail.com
 ```
 
  在GitHub设置公钥（复制~/.ssh/id_ed25519.pub里的内容）
