@@ -89,3 +89,42 @@ Date:   Mon Feb 1 01:10:19 2021 +0800
     edit git学习笔记
 ```
 
+### 分支的操作
+
+git branch	显示分支一览表
+
+```bash
+Frank-MacBook:docker Frank$ git branch
+
+* main
+```
+
+git checkout -b	创建，切换分支
+
+```bash
+Frank-MacBook:docker Frank$ git checkout -b feature-A
+Switched to a new branch 'feature-A'
+```
+
+git push	分支发布到GitHub
+
+```bash
+Frank-MacBook:docker Frank$ git push --set-upstream origin feature-A
+Enter passphrase for key '/Users/Frank/.ssh/id_ed25519':
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 456 bytes | 456.00 KiB/s, done.
+Total 3 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+remote:
+remote: Create a pull request for 'feature-A' on GitHub by visiting:
+remote:      https://github.com/xxx/docker/pull/new/feature-A
+remote:
+To github.com:xxx/docker.git
+
+ * [new branch]      feature-A -> feature-A
+   Branch 'feature-A' set up to track remote branch 'feature-A' from 'origin'.
+```
+
