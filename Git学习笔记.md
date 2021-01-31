@@ -89,3 +89,20 @@ Date:   Mon Feb 1 01:10:19 2021 +0800
     edit git学习笔记
 ```
 
+### 分支的操作
+
+git branch	显示分支一览表
+
+```bash
+Frank-MacBook:docker Frank$ git branch
+
+* main
+```
+
+git checkout -b	创建，切换分支
+
+```bash
+Frank-MacBook:docker Frank$ git checkout -b feature-A
+Switched to a new branch 'feature-A'
+```
+
