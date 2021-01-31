@@ -31,3 +31,9 @@ Enter passphrase for key '/Users/Frank/.ssh/id_ed25519':
 Hi zhangweibo413! You've successfully authenticated, but GitHub does not provide shell access.
 ```
 
+克隆项目到本地工作端（需要输入密码）
+
+```bash
+Frank-MacBook:~ Frank$ git clone git@github.com:zhangweibo413/docker.git
+```
+
