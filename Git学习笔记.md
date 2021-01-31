@@ -49,7 +49,9 @@ Frank-MacBook:~ Frank$ git clone git@github.com:xxx/docker.git
 提交修改
 
 git add 向暂存区中添加文件
-git commmit 保存仓库的历史记录，-m参数 记述详细提交信息
+
+git commit 保存仓库的历史记录，-m参数 记述详细提交信息
+
 git push 这步以后github才会被更新
 
 ```bash
