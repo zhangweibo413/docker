@@ -187,7 +187,7 @@ Deleted branch feature-B (was 41a2490).
 
 最后向主分支提交pull Request，要求代码合并
 
-
+还有一种情况，不Fork直接从分支发送Pull Request，比较适合比较熟悉的企业内部开发团队
 
 
 
