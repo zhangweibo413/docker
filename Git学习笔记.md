@@ -132,3 +132,25 @@ To github.com:xxx/docker.git
 
 或者在GitHub网站创建feature-B分支，在客户工作端切换到feature-B，获取最新的仓库分支
 
+```bash
+Frank-MacBook:docker Frank$ git checkout feature-B
+Branch 'feature-B' set up to track remote branch 'feature-B' from 'origin'.
+Switched to a new branch 'feature-B'
+Frank-MacBook:docker Frank$ git branch
+  feature-A
+
+* feature-B
+  main
+  Frank-MacBook:docker Frank$ git pull
+  Enter passphrase for key '/Users/Frank/.ssh/id_ed25519':
+  Already up to date.
+```
+
+在分支B新创建一个文件，发布后，可以看到分支AB内容是不一样，如果合并到main主分支，main主分支能看到AB所有的更新内容
+
+```bash
+Frank-MacBook:docker Frank$ git add Docker+k8s.md
+Frank-MacBook:docker Frank$ git commit -m "add new Docker+k8s.md"
+[feature-B e161652] add new Docker+k8s.md
+```
+
