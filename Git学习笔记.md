@@ -40,10 +40,18 @@ Frank-MacBook:docker Frank$ git config --global user.name "xxx"
 
 ### Git基本操作命令
 
-克隆项目到本地工作端（需要输入密码）
+GitHub**远程仓库**克隆项目到本地工作端（需要输入密码）
 
 ```bash
 Frank-MacBook:~ Frank$ git clone git@github.com:xxx/docker.git
+```
+
+默认获得main分支，同时自动将**origin**设置为远程仓库的标识符
+
+假如GitHub远程仓库有feature-A分支，获取远程的feature-A分支命令为
+
+```bash
+Frank-MacBook:docker Frank$ git pull origin feature-A
 ```
 
 提交修改
@@ -190,6 +198,7 @@ Deleted branch feature-B (was 41a2490).
 还有一种情况，不Fork直接从分支发送Pull Request，比较适合比较熟悉的企业内部开发团队
 
 远程仓库的概念需要学习
+今天终于搞清楚本地仓库和远程仓库命令操作的区别
 
 更新测试
 
