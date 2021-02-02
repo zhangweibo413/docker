@@ -46,21 +46,21 @@ GitHub**远程仓库**克隆项目到本地工作端（需要输入密码）
 Frank-MacBook:~ Frank$ git clone git@github.com:xxx/docker.git
 ```
 
-默认获得main分支，同时自动将**origin**设置为远程仓库的标识符
+**默认获得main分支**，同时自动将**origin**设置为远程仓库的标识符
 
 假如GitHub远程仓库有feature-A分支，获取远程的feature-A分支命令为
 
 ```bash
-Frank-MacBook:docker Frank$ git pull origin feature-A
+Frank-MacBook:docker Frank$ git checkout -b feature-A origin/feature-A
 ```
 
-提交修改
+在本地仓库修改文件后，提交修改
 
 git add 向暂存区中添加文件
 
 git commit 保存仓库的历史记录，-m参数 记述详细提交信息
 
-git push 这步以后github才会被更新
+git push 这步以后github远程仓库才会被更新
 
 ```bash
 Frank-MacBook:docker Frank$ git add Git学习笔记.md
@@ -103,102 +103,41 @@ git branch	显示分支一览表
 
 ```bash
 Frank-MacBook:docker Frank$ git branch
-
-* main
+* feature-A
+  main
 ```
 
-git checkout -b	创建，切换分支
+git checkout 切换分支
 
 ```bash
-Frank-MacBook:docker Frank$ git checkout -b feature-A
+Frank-MacBook:docker Frank$ git checkout feature-A
 Switched to a new branch 'feature-A'
 ```
 
-git push	分支发布到GitHub
+如果本地仓库没有分支，第一次获取远程仓库的分支的时候，需要加-b参数
+
+当远程仓库分支feature-A的内容发生变化，本地仓库需要更新时候，用以下命令
 
 ```bash
-Frank-MacBook:docker Frank$ git push --set-upstream origin feature-A
-Enter passphrase for key '/Users/Frank/.ssh/id_ed25519':
-Enumerating objects: 5, done.
-Counting objects: 100% (5/5), done.
-Delta compression using up to 4 threads
-Compressing objects: 100% (3/3), done.
-Writing objects: 100% (3/3), 456 bytes | 456.00 KiB/s, done.
-Total 3 (delta 1), reused 0 (delta 0)
-remote: Resolving deltas: 100% (1/1), completed with 1 local object.
-remote:
-remote: Create a pull request for 'feature-A' on GitHub by visiting:
-remote:      https://github.com/xxx/docker/pull/new/feature-A
-remote:
-To github.com:xxx/docker.git
-
- * [new branch]      feature-A -> feature-A
-   Branch 'feature-A' set up to track remote branch 'feature-A' from 'origin'.
-```
-
-后面push就直接git push即可
-
-或者在GitHub网站创建feature-B分支，在客户工作端切换到feature-B，获取最新的仓库分支
-
-```bash
-Frank-MacBook:docker Frank$ git checkout feature-B
-Branch 'feature-B' set up to track remote branch 'feature-B' from 'origin'.
-Switched to a new branch 'feature-B'
-Frank-MacBook:docker Frank$ git branch
-  feature-A
-
-* feature-B
-  main
-  Frank-MacBook:docker Frank$ git pull
+acBook:docker Frank$ git pull origin feature-A
   Enter passphrase for key '/Users/Frank/.ssh/id_ed25519':
   Already up to date.
 ```
 
-在分支B新创建一个文件，发布后，可以看到分支AB内容是不一样，如果合并到main主分支，main主分支能看到AB所有的更新内容
-
-```bash
-Frank-MacBook:docker Frank$ git add Docker+k8s.md
-Frank-MacBook:docker Frank$ git commit -m "add new Docker+k8s.md"
-[feature-B e161652] add new Docker+k8s.md
-```
-
-分支获取到主干最新的源代码,先切换到分支B，然后把从主干合并到分支B
-
-```bash
-Frank-MacBook:docker Frank$ git checkout feature-B
-Switched to branch 'feature-B'
-Your branch is up to date with 'origin/feature-B'.
-Frank-MacBook:docker Frank$ git merge main
-Updating e161652..41a2490
-Fast-forward
- "Git\345\255\246\344\271\240\347\254\224\350\256\260.md" | 26 ++++++++++++++++++++++++++
- README.md                                                |  4 ++++
- 2 files changed, 30 insertions(+)
-```
-
-在本地删除分支B
-
-```bash
-Frank-MacBook:docker Frank$ git branch -D feature-B
-Deleted branch feature-B (was 41a2490).
-```
-
 ### 接收Pull Request
 
-流程
+上面例子中，本地仓库不管哪个分支进行修改后，最终push到GitHub远程仓库，在GitHub网站都会收到pull request要求，你可以在网站进行审核，并且最终合并到main主分支。
 
-开发者A先Fork一份需要修改的源代码的仓库
-
-在开发机器Clone一份上一步Fork的远程仓库到开发机器本地仓库
-
-可以在本地直接修改源代码，然后Push，或者创建分支修改，然后Push到远程再进行仓库合并
-
-最后向主分支提交pull Request，要求代码合并
-
-还有一种情况，不Fork直接从分支发送Pull Request，比较适合比较熟悉的企业内部开发团队
-
-远程仓库的概念需要学习
-今天终于搞清楚本地仓库和远程仓库命令操作的区别
-
-更新测试
+> 备注：社会开发者流程
+>
+> 开发者A先Fork一份需要修改的源代码的仓库
+>
+> 在开发机器Clone一份上一步Fork的远程仓库到开发机器本地仓库
+>
+> 可以在本地直接修改源代码，然后Push，或者创建分支修改，然后Push到远程再进行仓库合并
+>
+> 最后向主分支提交pull Request，要求代码合并
+>
+> 还有一种情况，不Fork直接从分支发送Pull Request，这个比较适合比较熟悉的企业内部开发团队
+>
 
