@@ -140,4 +140,4 @@ acBook:docker Frank$ git pull origin feature-A
 >
 > 还有一种情况，不Fork直接从分支发送Pull Request，这个比较适合比较熟悉的企业内部开发团队
 >
-
+测试一下本地获取远程仓库的更新
