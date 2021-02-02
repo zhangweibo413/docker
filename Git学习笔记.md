@@ -19,6 +19,8 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOQEswISzw5TKWtxX7yzIT/WmMjbU7IN3whyzaYULprj
 
  在GitHub设置公钥（复制~/.ssh/id_ed25519.pub里的内容）
 
+![github-ssh](/Users/Frank/docker/images/github-ssh.png)
+
 验证SSH Key
 
 ```bash
