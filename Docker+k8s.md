@@ -678,15 +678,66 @@ minikube start	#系统要求最小2核心cpu，2G内存
 
 ### 使用Tectonic在本地单间多节点K8S集群
 
+安装完以后修改配置文件，让minikube和tectonic并存，运行下列命理进行切换
+
+```bash
+$	kubectl config user-context minikube
+$	kubectl get nodes	#可以验证切换过去的集群是否节点正确
+```
+
 shell命令补全
 
-
+```bash
+$	kubectl completion zsh/bash	#根据自己的shell环境选择
+```
 
 ### k8s网络基础
 
 ### Service
 
+ClusterIP	集群内部可以访问
+
+```bash
+$	kubectl expose pods nginx-pod
+$	kubectl get svc		#能显示Cluster-IP和端口
+```
+
+原nginx-pod.yml
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx
+    ports:
+    - name: nginx-port
+      containerPort: 80
+```
+
+NodePort	外界可以访问node节点
+
+```bash
+$	kubectl expose pods nginx-pod --type=NodePort
+$	kubectl get svc		#能显示NodePort和端口，（默认暴露的端口在30000-32767之间随机）
+```
+
+LoadBalancer	运服务商可以提供
+
 ### NodePort类型Service和Label的应用
+
+```bash
+$	kubectl label node w1.techonicsanbox.com hardware=good
+```
+
+假如service的配置文件里label标签选择hardware=good，而node没有定义这个label，则pod就不会创建，会一直处在pending状态
+
+
 
 
 
