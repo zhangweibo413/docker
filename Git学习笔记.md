@@ -130,6 +130,20 @@ acBook:docker Frank$ git pull origin feature-A
 
 上面例子中，本地仓库不管哪个分支进行修改后，最终push到GitHub远程仓库，在GitHub网站都会收到pull request要求，你可以在网站进行审核，并且最终合并到main主分支。
 
+Push到GitHub远程仓库后，页面会显示收到pull request要求
+
+![](./images/github-ssh-1.png)
+
+然后就可以进行审核并后续的合并请求操作
+
+![](./images/github-ssh-2.png)
+
+![](./images/github-ssh-3.png)
+
+合并成功后，如果分支修改项目结束，可直接删除分支，如果没结束，关闭页面即可
+
+![](./images/github-ssh-4.png)
+
 > 备注：社会开发者流程
 >
 > 开发者A先Fork一份需要修改的源代码的仓库
