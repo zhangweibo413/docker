@@ -132,17 +132,17 @@ acBook:docker Frank$ git pull origin feature-A
 
 Push到GitHub远程仓库后，页面会显示收到pull request要求
 
-![](/Users/Frank/docker/images/github-ssh-1.png)
+![](./images/github-ssh-1.png)
 
 然后就可以进行审核并后续的合并请求操作
 
-![](/Users/Frank/docker/images/github-ssh-2.png)
+![](./images/github-ssh-2.png)
 
-![](/Users/Frank/docker/images/github-ssh-3.png)
+![](./images/github-ssh-3.png)
 
 合并成功后，如果分支修改项目结束，可直接删除分支，如果没结束，关闭页面即可
 
-![](/Users/Frank/docker/images/github-ssh-4.png)
+![](./images/github-ssh-4.png)
 
 > 备注：社会开发者流程
 >
