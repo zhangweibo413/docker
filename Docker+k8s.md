@@ -634,11 +634,13 @@ docker 联动自动depoly
 
 ## Kubernetes
 
-### minikube快速搭建k8s单节点环境
+### 安装k8s
 
 常用搭建工具
 
 minikue（单节点）， kubeadmin（集群）， kops，tectonic（Coreos）
+
+### minikube快速搭建k8s单节点环境
 
 安装minikube
 
@@ -666,7 +668,143 @@ $	sudo yum install -y kubectl
 minikube start	#系统要求最小2核心cpu，2G内存
 ```
 
+也可以指定国内镜像启动
 
+```bash
+minikube start --registry-mirror=https://u5w57oct.mirror.aliyuncs.com
+```
+
+```bash
+minikube dashboard
+```
+
+### 使用kubeadmin搭建三个节点的k8s集群
+
+准备三台机器
+
+masrer	192.168.205.10
+
+node1	192.168.205.11
+
+node2	192.168.205.12
+
+要求CPU至少2核以上，内存至少2G以上
+
+允许 iptables 检查桥接流量
+
+```bash
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
+
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+sudo sysctl --system
+```
+
+安装 kubeadm、kubelet 和 kubectl
+
+```bash
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+```
+
+将 SELinux 设置为 permissive 模式（相当于将其禁用）
+
+```bash
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+```
+
+安装
+
+```bash
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+sudo systemctl enable --now kubelet
+```
+
+```bash
+sudo systemctl stop firewalld
+sudo systemctl disable firewalld
+sudo swapoff -a
+```
+
+```bash
+sudo systemctl enable docker.service
+sudo systemctl enable kubelet.service
+```
+
+master安装成功
+
+```bash
+sudo kubeadm init --pod-network-cidr 172.100.0.0/16 --apiserver-advertise-address 192.168.205.10
+```
+
+
+master安装成功后的提示
+
+```bash
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.205.10:6443 --token s1kd51.1ueds2t342qmv0m6 \
+    --discovery-token-ca-cert-hash sha256:20df1826136cb3c8b2bcfbd502f3b140b69d9ba157b4821d17d0b762465969c5
+```
+
+然后在master节点上运行
+
+```bash
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+检查pod
+
+```bash
+[vagrant@k8s-master ~]$ kubectl get pod --all-namespaces
+NAMESPACE     NAME                                 READY   STATUS    RESTARTS   AGE
+kube-system   coredns-5c98db65d4-f4kjf             0/1     Pending   0          58m
+kube-system   coredns-5c98db65d4-xqpwd             0/1     Pending   0          58m
+kube-system   etcd-k8s-master                      1/1     Running   0          57m
+kube-system   kube-apiserver-k8s-master            1/1     Running   0          57m
+kube-system   kube-controller-manager-k8s-master   1/1     Running   0          57m
+kube-system   kube-proxy-9l9vr                     1/1     Running   0          58m
+kube-system   kube-scheduler-k8s-master            1/1     Running   0          57m
+[vagrant@k8s-master ~]$
+```
+
+安装网络插件
+
+```bash
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
 
 ### 最小单位POD
 
