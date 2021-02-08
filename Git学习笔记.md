@@ -126,6 +126,14 @@ acBook:docker Frank$ git pull origin feature-A
   Already up to date.
 ```
 
+删除本地仓库分支
+
+```bash
+Frank-MacBook:docker Frank$ git branch -d feature-A
+或者
+Frank-MacBook:docker Frank$ git branch -D feature-A	#在-d删除不掉的情况下，强制删除
+```
+
 ### 接收Pull Request
 
 上面例子中，本地仓库不管哪个分支进行修改后，最终push到GitHub远程仓库，在GitHub网站都会收到pull request要求，你可以在网站进行审核，并且最终合并到main主分支。
