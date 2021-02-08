@@ -806,9 +806,84 @@ kube-system   kube-scheduler-k8s-master            1/1     Running   0          
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
 
-### 最小单位POD
+### kubectl基本使用
 
-共享一个namespace
+命令自动补全
+
+```bash
+source <(kubectl completion zsh)	#tab键，或者字母自动补全
+```
+
+配置文件在
+
+~/.kube/config
+
+可以通过把其他集群的配置文件复制过来，这样能切换不同的集群环境
+
+```bash
+kubectl config current-context
+kubectl config get-context	#如果配置文件有复制过来，这里就会有选择了
+kubectl config use-context kubeadm	#切换，假如新复制过来的context是kubeadm
+```
+
+### k8s的节点和标签
+
+节点常用命令
+
+```bash
+kubectl get node
+kubectl describe nodes minikube
+kubectl get node -o wide
+kubectl get node -o yaml	#yaml格式输出
+```
+
+标签常用命令
+
+```bash
+kubectl get node --show-labels
+kubectl label node k8s-master env=test	#添加env=test的label
+kubectl label node k8s-master env-			#删除label
+```
+
+设置节点的roles，特殊的label
+
+```bash
+kubectl label node k8s-node1 node-role.kubernetes.io/worker=	#设置节点为work
+```
+
+### 最小调度单位POD
+
+- 共享相同命名空间
+- pod是k8s中最小的调度单位
+
+pod的定义
+
+```yaml
+kind
+spec：
+	containers:
+		- name:nginx						#容器1
+			image:nginx
+		- name:busybox					#容器2
+			image:busybox
+```
+
+创建及删除pod
+
+```bash
+kubectl create -f nginx_busybox.yml
+kubectl delete -f nginx_busybox.yml
+```
+
+pod基本命令
+
+```bash
+kubectl get pod
+kubectl describe pod nginx_busybox
+kubectl get pods nginx_busybox -o wide
+kubectl exec nginx_busybox -it sh		#默认进入第1个容器
+kubectl exec nginx_busybox -it -c busybox sh		#指定容器进行命令操作
+```
 
 ### RedplicaSet和ReplicationController
 
