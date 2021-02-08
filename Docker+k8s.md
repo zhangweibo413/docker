@@ -859,8 +859,11 @@ kubectl label node k8s-node1 node-role.kubernetes.io/worker=	#设置节点为wor
 pod的定义
 
 ```yaml
-kind
-spec：
+apiVersion:
+kind:
+metadata:
+	name:
+spec:
 	containers:
 		- name:nginx						#容器1
 			image:nginx
