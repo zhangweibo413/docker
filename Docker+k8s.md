@@ -812,6 +812,7 @@ kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl versio
 
 ```bash
 source <(kubectl completion zsh)	#tab键，或者字母自动补全
+source <(kubectl completion bash)	#linux系统
 ```
 
 配置文件在
@@ -888,9 +889,162 @@ kubectl exec nginx_busybox -it sh		#默认进入第1个容器
 kubectl exec nginx_busybox -it -c busybox sh		#指定容器进行命令操作
 ```
 
+### NameSpace
+
+不同team，不同项目之间的隔离
+
+基本操作命令
+
+```bash
+kubectl get namespace
+kubectl create namespace demo
+kubectl get pod --namespace kube-system
+```
+
+在特定namespace创建pod（默认是defaut的namespace）
+
+```yaml
+metadata:
+	name:nginx
+	namespace:demo
+```
+
+```
+kubectl create pod -f nginx.yml		#先要建立demo的namespace
+```
+
+### 创建自己的context
+
+修改默认的namespace为自己定义的namespace
+
+通过修改contexts来实现
+
+```bash
+kubectl config set-context demo --user=minikube --cluster=minikube --namespace=demo
+kubectl config use-context demo
+kubectl get pod			#默认就搜索namespace=demo下的pod
+kubectl config delete-context demo	#删除demo的context
+```
+
+### Controller和Deployment
+
+Controller实现的目的监控当前的实际状态，当实际状态不满足预定的状态，就会想办法去改变,实现标签选择，容器升级，容器平滑扩容，缩容
+
+举例：默认的nginx的部署文件，nginx_deployment.yml
+
+```yaml
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template: # create pods using pod definition in this template
+    metadata:
+      # unlike pod-nginx.yaml, the name is not included in the meta data as a unique name is
+      # generated from the deployment name
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+```
+
+deployment能维护容器的规模，哪怕是删除，也会自动补充上
+
+nginx从1.7.9**升级**到1.8版本  nginx_deployment_update.yml
+
+```yaml
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.8 # Update the version of nginx from 1.7.9 to 1.8
+        ports:
+        - containerPort: 80
+```
+
+但不能用**create**参数来升级,用**apply**命令来实现
+
+```bash
+kubectl apply -f nginx_deployment_update.yml
+```
+
+也可以使用下面办法实现
+
+```bash
+kubectl set image deployment/nginx_deployment nginx=nginx:1.8
+```
+
+**扩容**pod数量从2到4，nginx_deployment_scale.yml
+
+```yaml
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 4 # Update the replicas from 2 to 4
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.8
+        ports:
+        - containerPort: 80
+```
+
+可以通过以下方式来实现，方法很灵活
+
+```bash
+kubectl apply -f nginx_deployment_scale,yml
+kubectl eit deployment nginx_deployment	#可以通过这个命令进deployment修改replicas参数,保存退出
+kubectl scale --current-replicas=3 --replicas=4 deployment/nginx_deployment
+```
+
 ### RedplicaSet和ReplicationController
 
-### Deployment
+```bash
+kubectl get replicaset
+kubectl scale --current-replicas=3 --replicas=4 deployment/nginx_deployment
+```
+
+### 升级回滚
+
+```bash
+kubectl rollout history deployment nginx_deployment
+kubectl rollout history deployment nginx_deployment --revision 1	#查看第一个版本
+kubectl rollout history deployment nginx_deployment --revision 2	#查看第二个版本
+kubectl rollout undo deployment nginx_deployment									#退回到上一个版本
+kubectl rollout undo deployment nginx_deployment --to-revison 2
+
+```
+
+
 
 ### 使用Tectonic在本地单间多节点K8S集群
 
