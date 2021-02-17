@@ -1040,11 +1040,9 @@ kubectl rollout history deployment nginx_deployment
 kubectl rollout history deployment nginx_deployment --revision 1	#查看第一个版本
 kubectl rollout history deployment nginx_deployment --revision 2	#查看第二个版本
 kubectl rollout undo deployment nginx_deployment									#退回到上一个版本
-kubectl rollout undo deployment nginx_deployment --to-revison 2
+kubectl rollout undo deployment nginx_deployment --to-revison 2		#回滚到指定版本
 
 ```
-
-
 
 ### 使用Tectonic在本地单间多节点K8S集群
 
@@ -1107,9 +1105,258 @@ $	kubectl label node w1.techonicsanbox.com hardware=good
 
 假如service的配置文件里label标签选择hardware=good，而node没有定义这个label，则pod就不会创建，会一直处在pending状态
 
+### 容器的监控及weavescope
 
+```bash
+docker top 容器名
+docker stats			#实时系统状态，cpu，内存占用
+```
 
+安装步骤
 
+```bash
+$ sudo curl -L git.io/scope -o /usr/local/bin/scope
+$	sudo chmod +x /usr/local/bin/scope
+$ scope launch 192.168.205.13
+Unable to find image 'weaveworks/scope:1.13.1' locally
+1.13.1: Pulling from weaveworks/scope
+c9b1b535fdd9: Pull complete
+.
+Weave Scope is listening at the following URL(s):
+  * http://10.0.2.15:4040/
+  * http://192.168.205.13:4040/
+  * http://192.168.49.1:4040/
+```
 
+或者同时监控多台k8s主机
 
+```bash
+$ scope launch 192.168.205.13 192.168.205.14
+$ scope stop	#停止
+```
+
+### K8s资源监控heapster+Grafana+InfluxDB
+
+安装
+
+```bash
+$ sudo docker pull k8s.gcr.io/heapster-grafana-amd64:v4.4.3
+$ sudo docker pull k8s.gcr.io/heapster-amd64:v1.4.2
+$ sudo docker pull k8s.gcr.io/heapster-influxdb-amd64:v1.3.3
+```
+
+3个deployment文件
+
+查询apiVersion的方法
+
+```bash
+kubectl api-resources  |grep Deployment
+kubectl api-resources  |grep Service
+kubectl api-resources  |grep ServiceAccount
+```
+
+grafana.yaml
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: monitoring-grafana
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+   matchLabels:
+     app: monitoring-grafana
+  template:
+    metadata:
+      labels:
+        task: monitoring
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: k8s.gcr.io/heapster-grafana-amd64:v4.4.3
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/ssl/certs
+          name: ca-certificates
+          readOnly: true
+        - mountPath: /var
+          name: grafana-storage
+        env:
+        - name: INFLUXDB_HOST
+          value: monitoring-influxdb
+        - name: GF_SERVER_HTTP_PORT
+          value: "3000"
+          # The following env variables are required to make Grafana accessible via
+          # the kubernetes api-server proxy. On production clusters, we recommend
+          # removing these env variables, setup auth for grafana, and expose the grafana
+          # service using a LoadBalancer or a public IP.
+        - name: GF_AUTH_BASIC_ENABLED
+          value: "false"
+        - name: GF_AUTH_ANONYMOUS_ENABLED
+          value: "true"
+        - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+          value: Admin
+        - name: GF_SERVER_ROOT_URL
+          # If you're only using the API Server proxy, set this value instead:
+          # value: /api/v1/namespaces/kube-system/services/monitoring-grafana/proxy
+          value: /
+      volumes:
+      - name: ca-certificates
+        hostPath:
+          path: /etc/ssl/certs
+      - name: grafana-storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    # For use as a Cluster add-on (https://github.com/kubernetes/kubernetes/tree/master/cluster/addons)
+    # If you are NOT using this as an addon, you should comment out this line.
+    #kubernetes.io/cluster-service: 'true'
+    kubernetes.io/name: monitoring-grafana
+  name: monitoring-grafana
+  namespace: kube-system
+spec:
+  # In a production setup, we recommend accessing Grafana through an external Loadbalancer
+  # or through a public IP.
+  # type: LoadBalancer
+  # You could also use NodePort to expose the service at a randomly-generated port
+  # type: NodePort
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    k8s-app: grafana
+  type: NodePort
+```
+
+heapster.yaml
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: heapster
+  namespace: kube-system
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: heapster
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        task: monitoring
+        k8s-app: heapster
+    spec:
+      serviceAccountName: heapster
+      containers:
+      - name: heapster
+        image: k8s.gcr.io/heapster-amd64:v1.4.2
+        imagePullPolicy: IfNotPresent
+        command:
+        - /heapster
+        - --source=kubernetes:https://kubernetes.default
+        - --sink=influxdb:http://monitoring-influxdb.kube-system.svc:8086
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    task: monitoring
+    # For use as a Cluster add-on (https://github.com/kubernetes/kubernetes/tree/master/cluster/addons)
+    # If you are NOT using this as an addon, you should comment out this line.
+    #kubernetes.io/cluster-service: 'true'
+    kubernetes.io/name: Heapster
+  name: heapster
+  namespace: kube-system
+spec:
+  ports:
+  - port: 80
+    targetPort: 8082
+  selector:
+    k8s-app: heapster
+```
+
+influxdb.yaml
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: monitoring-influxdb
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        task: monitoring
+        k8s-app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: k8s.gcr.io/heapster-influxdb-amd64:v1.3.3
+        volumeMounts:
+        - mountPath: /data
+          name: influxdb-storage
+      volumes:
+      - name: influxdb-storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    task: monitoring
+    # For use as a Cluster add-on (https://github.com/kubernetes/kubernetes/tree/master/cluster/addons)
+    # If you are NOT using this as an addon, you should comment out this line.
+    # kubernetes.io/cluster-service: 'true'
+    kubernetes.io/name: monitoring-influxdb
+  name: monitoring-influxdb
+  namespace: kube-system
+spec:
+  ports:
+  - port: 8086
+    targetPort: 8086
+  selector:
+    k8s-app: influxdb
+```
+
+### 自动横向伸缩
+
+```bash
+kubectl run php-apache --image=k8s.gcr.io/hpa-example --requests=cpu=200m expose --port=80
+kubectl autoscale deployment php-apache --cpu-precent=50 --min=1 --max=10
+kubectl get horizontalpodautoscaler	#查看cpu负载
+```
+
+### k8s的log采集
+
+Syslog-----ELK(elasticsearch+logstash+kibana)
+
+hosted log服务
+
+Fluentd
+
+ElasticSearch(Log Index)
+
+Kibana(Log可视化)
+
+LogTrail(Log UI查看)
+
+```bash
+kubectl label node --all beta.kuberneters.io/fluentd-ds-ready=true	#给所有节点打标签
+```
+
+### k8s集群监控prometheus
 
