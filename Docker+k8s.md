@@ -1360,3 +1360,155 @@ kubectl label node --all beta.kuberneters.io/fluentd-ds-ready=true	#给所有节
 
 ### k8s集群监控prometheus
 
+### CICD（开源模式）
+
+GitLab
+
+Jenkins或者Travis CI
+
+### GitLab Server搭建
+
+以Centos7为例，准备一台至少内存为4G的机器。
+
+#### 安装依赖文件
+
+```bash
+sudo yum install -y git vim gcc glibc-static telnet
+sudo yum install -y curl policycoreutils-python openssh-server
+sudo systemctl enable sshd
+sudo systemctl start sshd
+
+sudo yum install postfix
+sudo systemctl enable postfix
+sudo systemctl start postfix
+```
+
+#### 设置gitlab安装源
+
+如果在国内的话，可以尝试使用清华大学的源。
+
+新建 /etc/yum.repos.d/gitlab-ce.repo，内容为
+
+```bash
+[gitlab-ce]
+name=Gitlab CE Repository
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/yum/el$releasever/
+gpgcheck=0
+enabled=1
+```
+
+如果在国外的话，可以使用
+
+```bash
+curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | sudo bash
+```
+
+#### 安装GitLab
+
+关于域名，如果要是设置域名，则如下，这个域名可以是真实购买的域名，如果您要把gitlab安装到公网比如阿里云上的话。
+
+如果只是想本地测试，则可以像下面一样，设置一个example的域名，然后记得在本地你的笔记本设置host，如果是MAC就在 /etc/hosts里添加 一行 `192.168.205.10 gitlab.example.com`
+
+```bash
+sudo EXTERNAL_URL="http://gitlab.example.com" yum install -y gitlab-ce
+```
+
+如果不想设置域名，或者想将来再考虑，可以直接
+
+```bash
+sudo yum install -y gitlab-ce
+```
+
+安装完成以后，运行下面的命令进行配置
+
+```bash
+sudo gitlab-ctl reconfigure
+```
+
+#### 登录和修改密码
+
+打开http://gitlab.example.com/ 修改root用户密码，然后使用root和新密码登陆。
+
+### GitLab CI服务器的搭建
+
+不使用Jenkins（因为gitlab ci 跟gitlab的搭配更加方便，且功能上也不输Jenkins）
+
+GitLab CI服务器最好是单独与gitlab服务器的一台Linux机器。
+
+#### 安装Docker
+
+```bash
+curl -sSL https://get.docker.com/ | sh
+```
+
+#### 安装gitlab ci runner
+
+```bash
+curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner/script.rpm.sh | sudo bash
+sudo yum install gitlab-ci-multi-runner -y
+```
+
+查看是否运行正常
+
+```bash
+[vagrant@gitlab-ci ~]$ sudo gitlab-ci-multi-runner status
+gitlab-runner: Service is running!
+[vagrant@gitlab-ci ~]$
+```
+
+#### 设置Docker权限
+
+为了能让gitlab-runner能正确的执行docker命令，需要把gitlab-runner用户添加到docker group里, 然后重启docker和gitlab ci runner
+
+```bash
+[vagrant@gitlab-ci ~]$ sudo usermod -aG docker gitlab-runner
+[vagrant@gitlab-ci ~]$ sudo service docker restart
+Redirecting to /bin/systemctl restart docker.service
+[vagrant@gitlab-ci ~]$ sudo gitlab-ci-multi-runner restart
+```
+
+#### 注册配置GitLab CI
+
+```
+sudo gitlab-ci-multi-runner register
+#域名输入GitLab的域名http://gitlab.example.com/
+#令牌Token从GitLab的CI/CD里去寻找
+#tags要输入，方便后期Pipeline构建过程选择Runner,比如demo，下面例子会用到
+```
+
+#### 演示Pipeline
+
+举例.gitlab-ci.yml
+
+```yaml
+#定义stages
+stages:
+	- build
+	- test
+	- deploy
+#定义job
+job1:
+	stages: build
+	tags:					#注册时候定义的tags
+		- demo
+	script:
+		- echo "I am job1"
+		- echo "I am in build stages"
+#定义job
+job2:
+	stages: test
+	tags:					#注册时候定义的tags
+		- demo
+	script:
+		- echo "I am job2"
+		- echo "I am in test stages"
+#定义job
+job3:
+	stages: deploy
+	tags:					#注册时候定义的tags
+		- demo
+	script:
+		- echo "I am job3"
+		- echo "I am in deploy stages"
+```
+
